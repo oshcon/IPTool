@@ -79,7 +79,7 @@ function main()
                 ifconfig
                 ;;
             "GEOIP")
-                echo 'Input the IP the lookup:'
+                echo 'Input the IP to lookup:'
                 read ipinput
                 geo_lookup $ipinput
                 ;;
