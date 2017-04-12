@@ -3,6 +3,7 @@
 # Used to perform some simple routine IP lookup/info tasks.
 
 function my_ip() {
+  echo "**Using OpenDNS**"
   echo Getting your public IP...
   ip=`dig +short myip.opendns.com @resolver1.opendns.com`
   echo $ip
@@ -47,6 +48,7 @@ function geo_lookup() {
   do
     case $option in
       "ipinfo.io")
+        echo "**Using IPInfo.io API**"
         echo 'Input the IP to lookup:'
         read ipinput
         if is_valid_ip $ipinput; then stat="valid"; else stat="invalid"; fi
@@ -59,6 +61,7 @@ function geo_lookup() {
         break
         ;;
       "freegeoip.net")
+        echo "**Using FreeGeoIP API**"
         echo 'Input the IP to lookup:'
         read ipinput
         if is_valid_ip $ipinput; then stat="valid"; else stat="invalid"; fi
@@ -125,10 +128,24 @@ function scan_all() {
   scan $host $ports $timeout
 }
 
+function get_headers() {
+  echo "**Using hackertarget API**"
+  echo "Input URL:"
+  read url
+  curl https://api.hackertarget.com/httpheaders/?q=$url
+}
+
+function dump_links() {
+  echo "**Using hackertarget API**"
+  echo "Input URL:"
+  read url
+  curl https://api.hackertarget.com/pagelinks/?q=$url
+}
+
 function prompt() {
   echo " "
-  PS3="Choose an option (1-8): "
-   options=("QUIT" "MYIP" "WHOIS" "GETIP" "IFCONFIG" "GEOIP" "PORTSCAN" "SCANALL")
+  PS3="Choose an option (1-11): "
+   options=("QUIT" "MYIP" "WHOIS" "GETIP" "IFCONFIG" "GEOIP" "PORTSCAN" "SCANALL" "GETHEADERS" "DUMPLINKS" "OPENLOG")
   select option in "${options[@]}"
   do
     case $option in
@@ -186,6 +203,27 @@ function prompt() {
         echo "==============================="
         prompt
         ;;
+      "GETHEADERS")
+        echo " "
+        echo "==============================="
+        get_headers
+        echo "==============================="
+        prompt
+        ;;
+      "DUMPLINKS")
+        echo " "
+        echo "==============================="
+        dump_links
+        echo " "
+        echo "==============================="
+        prompt
+        ;;
+      "OPENLOG")
+        nano ./"$LOG"
+        echo " "
+        echo "==============================="
+        prompt
+        ;;
       *)
         echo " "
         echo "Invalid option"
@@ -196,10 +234,18 @@ function prompt() {
 }
 
 function main() {
+  if [ -z "$LOC" ]; then
+    echo "Unable to get write permissions for current directory. Exiting.."
+    exit 1
+  fi
+
   echo " "
-  echo "IPTool by Conor - ヤホー!"
-  echo "**Requires an active internet connection to function**"
+  echo "IPTool [死]"
   prompt
 }
 
+RELATIVE="`dirname \"$0\"`" 
+LOC="`( cd \"$RELATIVE\" && pwd )`"
+echo "Running at $LOC"
+# TODO(oshcon): Copy stdout and stderr to a logfile in the relative directory.
 main "$@"
